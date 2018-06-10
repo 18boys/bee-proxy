@@ -1,0 +1,27 @@
+{
+  "name": "wproxy",
+  "version": "0.0.1",
+  "description": "dev proxy beta prod ",
+  "main": "./src/index.js",
+  "scripts": {
+    "prepack": "babel src -d dist "
+  },
+  "keywords": [
+    "dev",
+    "beta",
+    "prod",
+    "proxy"
+  ],
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "http-proxy": "^1.17.0",
+    "require-uncached": "^1.0.3",
+    "url": "^0.11.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
+  },
+  "author": "shuai.li",
+  "license": "ISC"
+}
