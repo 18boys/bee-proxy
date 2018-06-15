@@ -1,10 +1,11 @@
 {
-  "name": "wproxy",
-  "version": "0.0.1",
+  "name": "bee-proxy",
+  "version": "0.0.5",
   "description": "dev proxy beta prod ",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "prepack": "babel src -d dist "
+    "prepack": "babel src -d dist ",
+    "postinstall": "node ./lib/createConfigFile.js"
   },
   "keywords": [
     "dev",

@@ -21,22 +21,22 @@ function getTypeOf(obj) {
   return ''
 }
 
-//
-// function getParmsByName(name) {
-//   let result;
-//   paramList.forEach((item) => {
-//     if (item.split('=')[0] !== name
-//     )
-//       return;
-//     if (item.split('=').length === 2) {
-//       result = item.split('=')[1];
-//     }
-//     if (item.split('=').length === 1) {
-//       result = item;
-//     }
-//   })
-//   return result;
-// }
+
+function getParmsByName(name) {
+  let result;
+  paramList.forEach((item) => {
+    if (item.split('=')[0] !== name
+    )
+      return;
+    if (item.split('=').length === 2) {
+      result = item.split('=')[1];
+    }
+    if (item.split('=').length === 1) {
+      result = item;
+    }
+  })
+  return result;
+}
 
 // 给一个list返回
 function getCurrentEnv(args = [], envs) {
@@ -96,7 +96,7 @@ function executeDirResponder(mockPath, req, res) {
 }
 
 function executeFuncResponder(func, req, res) {
-  const json = JSON.stringify(func(req, res));
+  const json = JSON.stringify(func(req));
   res.setHeader('Content-Type', 'application/json;charset=UTF-8');
   res.end(json);
 }
@@ -114,15 +114,12 @@ function executeRule(rule, req, res) {
   }
   switch (executerType) {
     case 'web':
-      log.info('类型是http');
       executeHttpResponder(rule, req, res);
       break;
     case 'dir':
-      log.info('类型是目录');
       executeDirResponder(rule, req, res);
       break;
     case 'func':
-      log.info('类型是函数');
       executeFuncResponder(rule, req, res);
       break;
   }
@@ -155,7 +152,10 @@ module.exports = function (req, res, next) {
     [currentEnv, targetParam] = currentEnv.split('=');
   }
 
-  const currentRuleList = config[currentEnv];
+  let currentRuleList = config[currentEnv];
+  const globleRuleList = config.globalRules || [];
+
+  currentRuleList = globleRuleList.concat(currentRuleList);
   // 获取当前url适配的url,执行
   const rule = getRule(currentRuleList, req);
 
