@@ -15,10 +15,10 @@ const proxy = httpProxy.createProxyServer({});
 const paramList = process.argv;
 
 function getTypeOf(obj) {
-   if(/^\[object\s(.*)\]/.test(Object.prototype.toString.call(obj))){
-     return RegExp.$1;
-   }
-   return ''
+  if (/^\[object\s(.*)\]/.test(Object.prototype.toString.call(obj))) {
+    return RegExp.$1;
+  }
+  return ''
 }
 
 //
@@ -80,7 +80,28 @@ function getExecuterType(executer) {
   return executerType;
 }
 
-function executeRule(rule, req, res, next) {
+function executeHttpResponder(rule, req, res) {
+  proxy.web(req, res, {
+    target: rule,
+    changeOrigin: true,
+  });
+}
+
+function executeDirResponder(mockPath, req, res) {
+  const url = parseUrl(req.url).pathname;
+  const jsonPath = path.join(rootPath, mockPath, `${url}.json`);
+  const json = fs.readFileSync(jsonPath);
+  res.setHeader('Content-Type', 'application/json;charset=UTF-8');
+  res.end(json);
+}
+
+function executeFuncResponder(func, req, res) {
+  const json = JSON.stringify(func(req, res));
+  res.setHeader('Content-Type', 'application/json;charset=UTF-8');
+  res.end(json);
+}
+
+function executeRule(rule, req, res) {
   const url = rule;
   log.info(url);
 
@@ -93,20 +114,18 @@ function executeRule(rule, req, res, next) {
   }
   switch (executerType) {
     case 'web':
-      log.info('类型是http')
+      log.info('类型是http');
+      executeHttpResponder(rule, req, res);
       break;
     case 'dir':
-      log.info('类型是目录')
+      log.info('类型是目录');
+      executeDirResponder(rule, req, res);
       break;
     case 'func':
-      log.info('类型是函数')
+      log.info('类型是函数');
+      executeFuncResponder(rule, req, res);
       break;
   }
-  next();
-  // proxy.web(req, res, {
-  //   target: url,
-  //   changeOrigin: true,
-  // });
 }
 
 
@@ -135,11 +154,6 @@ module.exports = function (req, res, next) {
   if (currentEnv.split('=').length > 1) {
     [currentEnv, targetParam] = currentEnv.split('=');
   }
-
-  // 2.根据传入的环境变量,调用适当的回调函数
-  // 如果有localDir 那么优先取此文件夹下面的请求,如果没有那么继续找其他
-  // 如果有responder 属性,localDir/string/function,那么查看是否有可以匹配的变量,之后再请求
-  // 如果
 
   const currentRuleList = config[currentEnv];
   // 获取当前url适配的url,执行
