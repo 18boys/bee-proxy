@@ -6,16 +6,21 @@ const path = require('path');
 const fs = require('fs');
 const requireUncached = require('require-uncached');
 const httpProxy = require('http-proxy');
+const validUrl = require('valid-url');
 const parseUrl = require('url').parse;
 const {log} = require('../lib/utils');
 
 const rootPath = process.cwd();
 const proxy = httpProxy.createProxyServer({});
 const paramList = process.argv;
-//
-// function getTypeOf(obj){
-//   return String.prototype.toString(obj)
-// }
+
+function getTypeOf(obj) {
+   if(/^\[object\s(.*)\]/.test(Object.prototype.toString.call(obj))){
+     return RegExp.$1;
+   }
+   return ''
+}
+
 //
 // function getParmsByName(name) {
 //   let result;
@@ -36,9 +41,9 @@ const paramList = process.argv;
 // 给一个list返回
 function getCurrentEnv(args = [], envs) {
   let result = '';
-  log.info('args:' , args.length)
+  log.info('args:', args.length)
   args.forEach((item) => {
-    if(!item) return;
+    if (!item) return;
     if (envs.includes(item.split('=')[0])) {
       result = item;
     }
@@ -56,15 +61,52 @@ function getRule(currentRuleList, req) {
   return currentRule;
 }
 
+function getExecuterType(executer) {
+  let executerType = '';
+  const type = getTypeOf(executer);
+  log.info('type', type)
+  if (type === 'String') {
+    // 判断是文件夹还是域名
+    if (validUrl.isWebUri(executer)) {
+      executerType = 'web'; //  http or https
+    }
+    if (fs.existsSync(path.join(rootPath, executer))) {
+      executerType = 'dir'; //   本地目录
+    }
+  }
+  else if (type === 'Function') {
+    executerType = 'func';
+  }
+  return executerType;
+}
 
 function executeRule(rule, req, res, next) {
   const url = rule;
   log.info(url);
-  // 检查类型 分别处理
-  proxy.web(req, res, {
-    target: url,
-    changeOrigin: true,
-  });
+
+  // 判断类型 根据类型分别调用不同的方法
+  // 检查类型 分别给不同的路由函数进行处理
+  const executerType = getExecuterType(rule);
+  if (!executerType) {
+    log.error(`${rule} config error, please retry after fix it`)
+    process.exit(-1);
+  }
+  switch (executerType) {
+    case 'web':
+      log.info('类型是http')
+      break;
+    case 'dir':
+      log.info('类型是目录')
+      break;
+    case 'func':
+      log.info('类型是函数')
+      break;
+  }
+  next();
+  // proxy.web(req, res, {
+  //   target: url,
+  //   changeOrigin: true,
+  // });
 }
 
 
