@@ -97,7 +97,7 @@ npm start -- prod
 
 ### 3.配置规则说明
 
-####3.1环境参数配置
+#### 3.1环境参数配置
 示例配置中的 local,mock等key是环境参数,和你启动的时候传入的环境变量参数一致. 这里可以随便指定后端的环境参数
 比如说,你可以增加dev配置
 ```js
@@ -115,10 +115,10 @@ npm start -- dev
 ```
 然后就可以将所有的请求使用dev的配置进行转发
 
-####3.2 pattern参数
+#### 3.2 pattern参数
 pattern指定你的配置规则,只允许正则表达式
 
-####3.3 responder参数
+#### 3.3 responder参数
 指定对应的pattern的响应处理规则,可以是 web url(如https://baidu.com),也可以是本地目录(如/mock),
 也可以是函数[函数的入参是(req)]
 
@@ -155,7 +155,7 @@ npm start -- beta=5
 ```
 就可以将proxy开头的请求打到https://beta5.easy-mock.com/mock/123 环境
 
-####3.4 全局配置globalRules
+#### 3.4 全局配置globalRules
 🆙 有的时候希望所有的环境的某个请求都走同一个代理,此时可以在globalRules配置
 注意此配置的优先级比较低,如果请求同时符合globalRules以及对应环境的配置,此时
 globalRules中的配置将会被忽略.
