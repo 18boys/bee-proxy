@@ -73,12 +73,12 @@ var BeeProxy = function () {
         return item !== 'globalRules';
       });
       if (envList.length === 0) {
-        log.error('No available env found in wproxy.js, please retry a later!!!');
+        log.error('No available env found in wproxy.js, please retry a later after fix it correctly!!!');
         process.exit(-1);
       }
       var currentEnv = this._getCurrentEnv(envList);
       if (!currentEnv) {
-        log.warn('You have not set a  backend env params ,use ' + envList[0] + ' as default env');
+        log.warn('You have not specify backend env,use ' + envList[0] + ' as default');
         currentEnv = envList[0];
       }
       this.currentRuleList = this.config[currentEnv];
@@ -149,7 +149,7 @@ var BeeProxy = function () {
   }, {
     key: '_executeHttpResponder',
     value: function _executeHttpResponder(rule, req, res) {
-      log.info(req.url, '----->', rule);
+      log.info(req.url, ' -> ', rule + req.url);
       proxy.web(req, res, {
         target: rule,
         changeOrigin: true
@@ -179,7 +179,7 @@ var BeeProxy = function () {
       // check type ,then dispatch corresponding processor
       var responderType = this._getResponderType(responderProcessor);
       if (!responderType) {
-        log.error(rule + ' config error, please retry after fix it');
+        log.error(responderType + ' config error, please retry after fix it');
         process.exit(-1);
       }
       switch (responderType) {

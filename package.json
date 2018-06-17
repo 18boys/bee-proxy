@@ -1,6 +1,6 @@
 {
   "name": "bee-proxy",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "dev proxy beta prod ",
   "main": "./dist/index.js",
   "scripts": {
@@ -23,6 +23,10 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:18boys/bee-proxy.git"
   },
   "author": "shuai.li",
   "license": "ISC"
