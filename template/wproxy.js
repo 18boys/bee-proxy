@@ -5,11 +5,11 @@ module.exports = {
       responder: 'https://www.easy-mock.com/mock/5a5e9b7aef967f55f1ce698d/example/',
     },
     {
-      pattern: /^\/test1/,
+      pattern: /^\/test/,
       responder: '/mock',
     },
     {
-      pattern: /^\/test2/,
+      pattern: /^\/test/,
       responder: function () {
         return {
           status: 1
@@ -17,27 +17,27 @@ module.exports = {
       },
     },
   ],
-  ams: [
+  mock: [
     {
-      pattern: /^\/test1/,
+      pattern: /^\/test/,
       responder: '/mock',
     },
   ],
   beta: [
     {
-      pattern: /^\/test1/,
+      pattern: /^\/test/,
       responder: '/mock',
     },
   ],
   prod: [
     {
-      pattern: /^\/test1/,
+      pattern: /^\/test/,
       responder: '/mock',
     },
   ],
   globalRules: [
     {
-      pattern: /^\/test1/,
+      pattern: /^\/test/,
       responder: '/mock',
     },
   ],
