@@ -1,7 +1,7 @@
 module.exports = {
   local: [
     {
-      pattern: /^\/proxy\//,
+      pattern: /^\/proxy/,
       responder: 'https://www.easy-mock.com/mock/5a5e9b7aef967f55f1ce698d/example/',
     },
     {
