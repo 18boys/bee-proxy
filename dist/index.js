@@ -20,25 +20,74 @@ var rootPath = process.cwd();
 var proxy = httpProxy.createProxyServer({});
 var paramList = process.argv;
 
+var configFile = path.resolve(rootPath, 'wproxy.js');
+if (!fs.existsSync(configFile)) {
+  log.error('No wproxy.js folder found in ' + rootPath);
+  process.exit(-1);
+}
+
+// 获取到所有需要替换的参数
+var replaceParamMap = getReplaceParamMap(paramList);
+var config = requireUncached(configFile);
+
+var envList = Object.keys(config).filter(function (item) {
+  return item !== 'globalRules';
+});
+
+if (envList.length === 0) {
+  log.error('No available env found in wproxy.js, please retry a later!!!');
+  process.exit(-1);
+}
+var currentEnv = getCurrentEnv(paramList, envList);
+if (!currentEnv) {
+  log.warn('You have not set a  backend env params ,use ' + envList[0] + ' as default env');
+  currentEnv = envList[0];
+}
+
+var targetParam = '';
+if (currentEnv.split('=').length > 1) {
+  var _currentEnv$split = currentEnv.split('=');
+
+  var _currentEnv$split2 = _slicedToArray(_currentEnv$split, 2);
+
+  currentEnv = _currentEnv$split2[0];
+  targetParam = _currentEnv$split2[1];
+}
+
+var currentRuleList = config[currentEnv];
+
+// 将responder中的变量替换掉
+var replaceKeys = Object.keys(replaceParamMap);
+currentRuleList = currentRuleList.map(function (rule) {
+  if (getTypeOf(rule.responder) !== 'string') return rule;
+  replaceKeys.forEach(function (key) {
+    var value = replaceParamMap[key];
+    var regexp = '#\\{' + key + '\\}';
+    rule.responder = rule.responder.replace(new RegExp(regexp, 'g'), value);
+  });
+  return rule;
+});
+
+var globleRuleList = config.globalRules || [];
+
+currentRuleList = globleRuleList.concat(currentRuleList);
+
 function getTypeOf(obj) {
   if (/^\[object\s(.*)\]/.test(Object.prototype.toString.call(obj))) {
-    return RegExp.$1;
+    return RegExp.$1.toLowerCase();
   }
   return '';
 }
 
-function getParmsByName(name) {
-  var result = void 0;
+function getReplaceParamMap(paramList) {
+  var paramMap = {};
   paramList.forEach(function (item) {
-    if (item.split('=')[0] !== name) return;
-    if (item.split('=').length === 2) {
-      result = item.split('=')[1];
-    }
-    if (item.split('=').length === 1) {
-      result = item;
+    var paramList = item.split('=');
+    if (paramList.length === 2) {
+      paramMap[paramList[0]] = paramList[1];
     }
   });
-  return result;
+  return paramMap;
 }
 
 // 给一个list返回
@@ -47,7 +96,6 @@ function getCurrentEnv() {
   var envs = arguments[1];
 
   var result = '';
-  log.info('args:', args.length);
   args.forEach(function (item) {
     if (!item) return;
     if (envs.includes(item.split('=')[0])) {
@@ -57,7 +105,7 @@ function getCurrentEnv() {
   return result;
 }
 
-function getRule(currentRuleList, req) {
+function getRule(currentRuleList, req, replaceParamMap) {
   var currentRule = '';
   currentRuleList.forEach(function (item) {
     if (item.pattern.test(req.url)) {
@@ -70,8 +118,7 @@ function getRule(currentRuleList, req) {
 function getExecuterType(executer) {
   var executerType = '';
   var type = getTypeOf(executer);
-  log.info('type', type);
-  if (type === 'String') {
+  if (type === 'string') {
     // 判断是文件夹还是域名
     if (validUrl.isWebUri(executer)) {
       executerType = 'web'; //  http or https
@@ -79,13 +126,14 @@ function getExecuterType(executer) {
     if (fs.existsSync(path.join(rootPath, executer))) {
       executerType = 'dir'; //   本地目录
     }
-  } else if (type === 'Function') {
+  } else if (type === 'function') {
     executerType = 'func';
   }
   return executerType;
 }
 
 function executeHttpResponder(rule, req, res) {
+  log.info(req.url, '----->', rule);
   proxy.web(req, res, {
     target: rule,
     changeOrigin: true
@@ -95,6 +143,7 @@ function executeHttpResponder(rule, req, res) {
 function executeDirResponder(mockPath, req, res) {
   var url = parseUrl(req.url).pathname;
   var jsonPath = path.join(rootPath, mockPath, url + '.json');
+  log.info(req.url, '----->', jsonPath);
   var json = fs.readFileSync(jsonPath);
   res.setHeader('Content-Type', 'application/json;charset=UTF-8');
   res.end(json);
@@ -107,8 +156,6 @@ function executeFuncResponder(func, req, res) {
 }
 
 function executeRule(rule, req, res) {
-  var url = rule;
-  log.info(url);
 
   // 判断类型 根据类型分别调用不同的方法
   // 检查类型 分别给不同的路由函数进行处理
@@ -132,42 +179,8 @@ function executeRule(rule, req, res) {
 
 module.exports = function (req, res, next) {
 
-  var configFile = path.resolve(rootPath, 'wproxy.js');
-  if (!fs.existsSync(configFile)) {
-    log.error('No wproxy.js folder found in ' + rootPath);
-    process.exit(-1);
-  }
-  var config = requireUncached(configFile);
-  var envList = Object.keys(config).filter(function (item) {
-    return item !== 'globalRules';
-  });
-
-  if (envList.length === 0) {
-    log.error('No available env found in wproxy.js, please retry a later!!!');
-    process.exit(-1);
-  }
-  var currentEnv = getCurrentEnv(paramList, envList);
-  if (!currentEnv) {
-    log.warn('You have not set a  backend env params ,use ' + envList[0] + ' as default env');
-    currentEnv = envList[0];
-  }
-
-  var targetParam = '';
-  if (currentEnv.split('=').length > 1) {
-    var _currentEnv$split = currentEnv.split('=');
-
-    var _currentEnv$split2 = _slicedToArray(_currentEnv$split, 2);
-
-    currentEnv = _currentEnv$split2[0];
-    targetParam = _currentEnv$split2[1];
-  }
-
-  var currentRuleList = config[currentEnv];
-  var globleRuleList = config.globalRules || [];
-
-  currentRuleList = globleRuleList.concat(currentRuleList);
   // 获取当前url适配的url,执行
-  var rule = getRule(currentRuleList, req);
+  var rule = getRule(currentRuleList, req, replaceParamMap);
 
   if (rule) {
     executeRule(rule, req, res);
