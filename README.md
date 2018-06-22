@@ -138,10 +138,12 @@ npm start -- local=mock  id=5a5e9b7aef967f55f1ce698d
 
 这在对应多个beta环境的时候特别有用,比如说可以这样配置
 ```js
-    {
-      pattern: /^\/proxy/,
-      responder: 'https://beta#{beta}.easy-mock.com/mock/123',
-    },
+ beta:[
+  {
+       pattern: /^\/proxy/,
+       responder: 'https://beta#{beta}.easy-mock.com/mock/123',
+     },
+ ]
 ```
 这样在启动的时候
 ```js
@@ -170,7 +172,7 @@ module.exports = {
     exports: ['./scripts/app.js'],
     modifyWebpackConfig: function (baseConfig) {
       // 示例：处理 .hello 类型文件，全部返回文字 "hello!"
-      this.applymiddleware(proxy)
+      this.applyMiddleware(proxy)
       return baseConfig;
     }
   }
@@ -202,6 +204,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   // cheap-module-eval-source-map is faster for development
   devtool: config.dev.devtool,
 
+  // these devServer options should be customized in /config/index.js
   // these devServer options should be customized in /config/index.js
   devServer: {
     disableHostCheck: true,
@@ -271,3 +274,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   },
 }
 ```
+
+```js
+npm install validate-git-branch --save-dev
+```
+
