@@ -163,7 +163,7 @@ npm start -- beta=5
 globalRules中的配置将会被忽略.
 
 ### 4.一步一步教你加中间件
-#### 4.1 ykit配置示例
+#### 4.1 使用ykit来进行代码打包构建的工程配置示例
 ```
 var proxy = require('bee-proxy')
 var path = require('path');
@@ -180,7 +180,7 @@ module.exports = {
 
 ```
 
-#### 4.2 vue-cli 构建的工程 配置示例
+#### 4.2 vue-cli等使用webpack打包构建的工程 配置示例
 早期版本使用http-proxy-middleware来作为本地服务器,这种情况下找到dev-server.js,加入中间件即可.
 ```js
 var proxy = require('bee-proxy')
