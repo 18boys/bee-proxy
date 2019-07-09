@@ -274,8 +274,3 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   },
 }
 ```
-
-```js
-npm install validate-git-branch --save-dev
-```
-
