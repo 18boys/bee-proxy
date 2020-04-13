@@ -1,6 +1,6 @@
 {
   "name": "bee-proxy",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "dev proxy beta prod ",
   "main": "./dist/index.js",
   "scripts": {
