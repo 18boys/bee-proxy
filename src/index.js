@@ -11,6 +11,10 @@ const parseUrl = require('url').parse;
 const {log, getTypeOf} = require('../lib/utils');
 const proxy = httpProxy.createProxyServer({});
 
+proxy.on('error', function(e) {
+  log.error(e)
+});
+
 class BeeProxy {
   constructor() {
     this.rootPath = process.cwd();
